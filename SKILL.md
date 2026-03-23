@@ -1,17 +1,9 @@
 ---
 name: telegram-sync
-description: 让 Codex 桌面对话和 Telegram 共享当前会话时使用。适用于首次配置 Telegram 桥接、启动或恢复桥接、把当前这条切到 Telegram 同步、关闭同步，以及把整套能力作为一个可拷走的 skill 包分享给别人。
+description: 让 Codex 桌面对话和 Telegram 共享当前会话时使用。适用于首次配置 Telegram 桥接、启动或恢复桥接、把当前这条切到 Telegram 同步，以及关闭同步。
 ---
 
 # Telegram Sync
-
-这个 skill 本身就是一个可拷走的包。
-
-- 说明在这个 `SKILL.md`
-- 真正运行的桥接脚本在 `scripts/`
-- 配置样例在 `.env.example`
-
-别人拿走时，直接复制整个 `telegram-sync` 目录到自己的 Codex `skills` 目录，不要只复制这一个 `SKILL.md`。
 
 ## 目前支持情况
 
@@ -156,5 +148,3 @@ node scripts/cli.js telegram-off
 - Telegram chat id
 - 本机能用 `9222` 方式启动 Codex
 - Windows 上如果安装路径不同，要把命令里的 `Codex.exe` 路径换成实际位置
-
-不需要 Chrome 扩展，也不需要 `opencli`。
