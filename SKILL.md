@@ -1,150 +1,149 @@
 ---
 name: telegram-sync
-description: 让 Codex 桌面对话和 Telegram 共享当前会话时使用。适用于首次配置 Telegram 桥接、启动或恢复桥接、把当前这条切到 Telegram 同步，以及关闭同步。
+description: Use when you want to share the current Codex desktop conversation with Telegram. Covers first-time bridge setup, starting or restoring the bridge, switching the current conversation into Telegram sync, and turning sync off.
 ---
 
 # Telegram Sync
 
-## 目前支持情况
+## Current support
 
-- macOS：已实际验证
-- Windows：按同样思路可用，但还没有做过真机验证
+- macOS: verified
+- Windows: same setup approach, but not yet verified on a real machine
 
-## 先记住这条规则
+## Core rule
 
-- 同一时刻只能有一条对话在同步。
-- 哪条对话最后显性执行了 `telegram-on`，哪条就是当前同步中的对话。
-- 执行 `telegram-off` 后，当前这条就停止同步。
-- 不要再依赖对话里的暗号、紫色 skill 标签，或隐藏标记。
+- Only one conversation can be synced at a time.
+- The conversation that most recently runs `telegram-on` becomes the active synced conversation.
+- Running `telegram-off` stops sync for the current conversation.
+- Do not rely on hidden markers, old trigger phrases, or skill-chip-only signals.
 
-## 首次配置
+## First-time setup
 
-在这个 skill 目录里按下面顺序做：
+Inside this skill directory, do the following:
 
-1. 安装依赖：
+1. Install dependencies:
 
 ```bash
 npm install
 ```
 
-2. 复制配置模板：
+2. Copy the config template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-3. 在 `.env.local` 里至少填这三个值：
+3. Fill in at least these three values in `.env.local`:
 
 ```env
 CODEX_TELEGRAM_CDP_ENDPOINT=http://127.0.0.1:9222
-CODEX_TELEGRAM_BOT_TOKEN=你的_bot_token
-CODEX_TELEGRAM_ALLOWED_CHAT_ID=你的_chat_id
+CODEX_TELEGRAM_BOT_TOKEN=your_bot_token
+CODEX_TELEGRAM_ALLOWED_CHAT_ID=your_chat_id
 ```
 
-4. 如果还不知道 `chat id`：
-   先把 `CODEX_TELEGRAM_ALLOWED_CHAT_ID` 留空，启动桥接后给 bot 发 `/chatid`，拿到数字后填回 `.env.local`，再重启桥接。
+4. If you do not know the `chat id` yet:
+   Leave `CODEX_TELEGRAM_ALLOWED_CHAT_ID` empty, start the bridge, send `/chatid` to the bot, then paste the value back into `.env.local` and restart the bridge.
 
-5. 用 `9222` 方式启动 Codex。
+5. Start Codex with the `9222` option.
 
-macOS：
+macOS:
 
 ```bash
 /Applications/Codex.app/Contents/MacOS/Codex --remote-debugging-port=9222
 ```
 
-Windows：
+Windows:
 
 ```powershell
 & "C:\Path\To\Codex\Codex.exe" --remote-debugging-port=9222
 ```
 
-Windows 这条路径要换成对方自己机器上的实际安装位置。
+Replace the Windows path with the real installation path on that machine.
 
-6. 启动桥接：
+6. Start the bridge:
 
 ```bash
 node scripts/cli.js bridge
 ```
 
-桥接启动后，这个终端要一直开着，不能关。
+Keep that terminal window open after the bridge starts.
 
-## 日常使用
+## Daily use
 
-在这个 skill 目录里运行：
+Inside this skill directory:
 
-- 开启当前这条同步：
+- Turn sync on for the current conversation:
 
 ```bash
 node scripts/cli.js telegram-on
 ```
 
-- 关闭当前这条同步：
+- Turn sync off:
 
 ```bash
 node scripts/cli.js telegram-off
 ```
 
-- 看现在到底跟的是哪条：
+- Check which conversation is currently synced:
 
 ```bash
 node scripts/cli.js telegram-status
 ```
 
-Telegram 端只保留最小入口：
+Telegram stays minimal:
 
-- 正常发消息
+- Normal chat messages
 - `/chatid`
 - `/help`
 
-不要把 Telegram 当成线程管理面板。
+Do not treat Telegram as a thread management panel.
 
-## Agent 应该怎么做
+## Agent behavior
 
-如果用户是要“配置”：
+If the user wants setup:
 
-- 先检查这个 skill 目录里有没有 `package.json`、`scripts/cli.js`、`.env.local`
-- 再检查 `.env.local` 里是否已有 `CODEX_TELEGRAM_BOT_TOKEN`、`CODEX_TELEGRAM_ALLOWED_CHAT_ID`
-- 再确认 Codex 是否按 `9222` 方式启动
-- 如果是 Windows，不要假设安装路径固定，先让用户确认 `Codex.exe` 的实际位置
-- 再确认桥接是否已经在跑
-- 缺哪一步就补哪一步
+- Check whether this skill directory already has `package.json`, `scripts/cli.js`, and `.env.local`
+- Check whether `.env.local` already contains `CODEX_TELEGRAM_BOT_TOKEN` and `CODEX_TELEGRAM_ALLOWED_CHAT_ID`
+- Confirm that Codex is running with the `9222` option
+- On Windows, do not assume the install path; ask the user to confirm the real `Codex.exe` path first
+- Confirm that the bridge is already running
+- Fill in any missing step before reporting back
 
-如果用户是要“开启同步”：
+If the user wants to turn sync on:
 
-- 不要让用户再去输入暗号
-- 先运行一次：
+- Do not tell the user to enter an old trigger phrase
+- First run:
 
 ```bash
 node scripts/cli.js telegram-status --json
 ```
 
-- 如果已经有别的对话在同步，而且不是当前这条，要先明确提醒用户：
-  当前开启后，之前那条会停止同步，改为当前这条
-- 直接在这个 skill 目录里显性执行：
+- If a different conversation is already synced, clearly warn the user that turning sync on here will stop sync for the previous conversation
+- Explicitly run:
 
 ```bash
 node scripts/cli.js telegram-on
 ```
 
-- 如果 `telegram-on` 的结果里出现 `PreviousThread`，也要把这件事明确告诉用户，不要轻描淡写带过
-- 执行成功后，只用一句短中文确认已经开启
+- If the result includes `PreviousThread`, clearly tell the user that sync was switched away from the previous conversation
+- After success, reply with one short Chinese sentence confirming that sync is on
 
-如果用户是要“关闭同步”：
+If the user wants to turn sync off:
 
-- 直接在这个 skill 目录里显性执行：
+- Explicitly run:
 
 ```bash
 node scripts/cli.js telegram-off
 ```
 
-- 执行成功后，只用一句短中文确认已经关闭
+- After success, reply with one short Chinese sentence confirming that sync is off
 
-## 分享给别人时需要什么
+## Requirements for sharing
 
-- Codex 桌面版
-- Node 20 或更高版本
+- Codex desktop app
+- Node 20 or newer
 - `npm`
 - Telegram bot token
 - Telegram chat id
-- 本机能用 `9222` 方式启动 Codex
-- Windows 上如果安装路径不同，要把命令里的 `Codex.exe` 路径换成实际位置
+- A local Codex app that can be started with the `9222` option
+- On Windows, replace the sample `Codex.exe` path with the real one on that machine
