@@ -1,0 +1,17 @@
+{
+  "name": "codex-telegram-sync-skill",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "bin": {
+    "codex-telegram-sync": "scripts/cli.js"
+  },
+  "scripts": {
+    "bridge": "node scripts/cli.js bridge"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
